@@ -8,18 +8,17 @@ def cute(cls):
     if not is_dataclass(cls):
         raise TypeError(f"Passed class is not dataclass but: {cls}")
 
+    def names(dcls_or_obj):
+        return (field_.name for field_ in fields(dcls_or_obj))
+
     def __iter__(self):
-        for field_ in fields(cls):
-            yield getattr(self, field_.name)
+        return (getattr(self, name) for name in names(cls))
 
     class _:
         def __get__(self, inst=None, owner=None):
             if inst is None:
                 raise AttributeError
-
-            names = (field_.name for field_ in fields(owner))
-            values = iter(inst)
-            return dict(zip(names, values))
+            return dict(zip(names(inst), inst))
 
     cls.__iter__ = __iter__
     cls._ = _()
@@ -55,3 +54,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
